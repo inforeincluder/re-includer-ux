@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Checklist gratuito para diagnóstico heurístico inicial de UX.">
+<title>Diagnóstico UX — Re-Includer UX</title>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="header"><a href="../../../" class="brand">Re-Includer <span>UX</span></a><a href="../../../">Voltar ao início</a></header>
+<main class="wrap">
+<section class="intro"><p class="eyebrow">UX Audit Lite · Protótipo gratuito</p><h1>Diagnóstico guiado de experiência</h1><p>Avalie uma página pública usando observações próprias. O resultado é um ponto de partida, não uma certificação nem um teste com usuários.</p></section>
+<form id="audit-form">
+<section class="panel metadata"><h2>1. Identifique a página</h2><label for="page-name">Nome da página ou negócio</label><input id="page-name" name="page-name" maxlength="100" placeholder="Ex.: Página inicial da minha clínica"><label for="page-url">URL pública (opcional)</label><input id="page-url" name="page-url" type="url" placeholder="https://exemplo.com.br"><p class="hint">Não informe senhas, dados de clientes ou links de áreas privadas.</p></section>
+<section class="panel"><h2>2. Avalie os critérios</h2><p class="hint">Para cada item, escolha uma opção. “Não se aplica” não entra no cálculo.</p><div id="criteria"></div></section>
+<section class="panel"><h2>3. Gere seu relatório</h2><label for="context">Contexto ou objetivo principal da página (opcional)</label><textarea id="context" rows="3" maxlength="500" placeholder="Ex.: Quero que visitantes solicitem um orçamento."></textarea><button class="primary" type="submit">Gerar relatório</button></section>
+</form>
+<section id="report" class="panel report" hidden aria-live="polite"><div class="report-head"><div><p class="eyebrow">Resultado da avaliação</p><h2 id="report-title">Relatório UX</h2></div><div class="score" id="score"></div></div><p id="score-note" class="hint"></p><div id="report-content"></div><div class="actions"><button type="button" class="primary" id="copy">Copiar relatório</button><button type="button" class="secondary" id="print">Imprimir / salvar PDF</button><button type="button" class="secondary" id="reset">Nova avaliação</button></div><p class="disclaimer">Este resultado reflete as respostas fornecidas. Não é uma auditoria técnica, avaliação de conformidade WCAG ou evidência de comportamento real dos usuários.</p></section>
+<footer>Re-Includer UX · Protótipo sem cadastro e sem envio de dados para servidor.</footer>
+</main>
+</body></html>
