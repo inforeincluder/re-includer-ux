@@ -18,6 +18,8 @@ Um diagnóstico inicial de uma página digital, com achados explicáveis e recom
 - `tools/ux-audit-lite/` — protótipo da ferramenta.
 - `assets/` — identidade e recursos visuais.
 - `research/` — evidências e aprendizados de validação.
+- `ai-backend/` — backend inicial do consultor de UX com IA.
+- `docs/ia-arquitetura.md` — arquitetura, segurança e critérios de qualidade da IA.
 
 ## Princípios
 - Clareza e utilidade antes de automação.
@@ -34,7 +36,9 @@ Um diagnóstico inicial de uma página digital, com achados explicáveis e recom
 - [ ] Construir protótipo estático e acessível.
 - [ ] Executar pilotos e revisar escopo/preço.
 - [ ] Publicar página do produto.
-- [ ] Avaliar integração de IA e hospedagem de ferramenta.
+- [x] Preparar backend inicial do consultor de IA.
+- [ ] Criar e configurar Hugging Face Space privado para testes.
+- [ ] Integrar a IA ao fluxo do site com proteção contra abuso e custos.
 
 ## Estado atual
 **Planejamento e definição do MVP.** Ainda não existe ferramenta funcional nem oferta comercial validada.
