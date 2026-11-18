@@ -34,7 +34,7 @@ Proprietário ou responsável por pequeno negócio que mantém uma página, land
 ## Escopo do MVP
 - Uma URL por análise.
 - Uma página por vez.
-- Diagnóstico heurístico, não teste de usabilidade.
+- Autoavaliação heurística guiada, baseada nas respostas do usuário; não é inspeção automática da URL nem teste de usabilidade.
 - Relatório em linguagem simples.
 - Revisão humana antes de entregar análises pagas.
 
@@ -54,4 +54,4 @@ Proprietário ou responsável por pequeno negócio que mantém uma página, land
 - Evitar armazenar URLs ou relatórios além do necessário.
 
 ## Critério de pronto para piloto
-O MVP estará pronto para piloto quando conseguir produzir um relatório consistente para uma página pública, explicitar falhas de acesso e apresentar achados rastreáveis à evidência.
+O protótipo atual permite autoavaliação guiada e geração local de relatório. Para um piloto comercial, ainda será necessário implementar inspeção automática verificável da página, rastreabilidade de evidências e validação com usuários.
