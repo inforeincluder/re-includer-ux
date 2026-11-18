@@ -22,6 +22,8 @@ form.addEventListener("submit",e=>{
  if(missing.length){missing[0].querySelector("input").focus();return;}
  const name=document.getElementById("page-name").value.trim()||"Página não identificada";
  const url=document.getElementById("page-url").value.trim();
+ if(url){try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error("scheme");}catch{document.getElementById("page-url").setCustomValidity("Informe uma URL pública iniciada por http:// ou https://.");document.getElementById("page-url").reportValidity();return;}}
+ document.getElementById("page-url").setCustomValidity("");
  const context=document.getElementById("context").value.trim();
  const answers=criteria.map(c=>({...c,value:form.querySelector(`input[name="${c.id}"]:checked`).value,note:document.getElementById("note-"+c.id).value.trim()}));
  const applicable=answers.filter(a=>a.value!=="na");
