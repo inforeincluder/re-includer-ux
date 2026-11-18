@@ -92,7 +92,7 @@ with gr.Blocks(title="Re-Includer UX — Consultor de UX com IA") as demo:
     gr.Markdown("**Importante:** esta ferramenta interpreta os dados que você fornecer. Ela não navega automaticamente pela URL nem substitui testes com usuários ou auditoria técnica.")
     report = gr.Textbox(label="Cole o relatório ou os dados da avaliação", lines=12, max_lines=24, placeholder="Cole aqui os achados do UX Scanner ou o relatório de autoavaliação.")
     button = gr.Button("Gerar diagnóstico especializado", variant="primary")
-    output = gr.Markdown(label="Diagnóstico")
+    output = gr.Markdown()
     button.click(fn=analyze_report, inputs=report, outputs=output, api_name="analyze")
     gr.Markdown("---\nRe-Includer UX · Não inclua senhas, dados pessoais ou informações confidenciais.")
 
