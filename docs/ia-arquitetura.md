@@ -1,33 +1,43 @@
-# Arquitetura da IA — Re-Includer UX
+# IA no Re-Includer UX
 
-## Objetivo de produto
-O fator de diferenciação será converter evidências de UX em decisões concretas: o que corrigir, por quê, como corrigir e como validar.
+## Primeira integração: Gemini via GitHub Actions
 
-## Arquitetura
-1. **UX Scanner (site):** coleta sinais verificáveis da página e registra URL, data, limites e evidências.
-2. **Evidence Normalizer:** converte achados em JSON estruturado e separa observações de hipóteses.
-3. **AI Consultant (Hugging Face Space):** interpreta somente o material fornecido; não recebe token no navegador.
-4. **Report Builder:** apresenta leitura executiva, três prioridades, exemplos antes/depois e plano de validação.
+A primeira versão usa o próprio GitHub como interface operacional:
+- O fluxo **Consultor UX com Gemini** é iniciado manualmente em Actions.
+- A entrada é fornecida no formulário de execução.
+- A chave fica em **Settings → Secrets and variables → Actions** como `GEMINI_API_KEY`.
+- O resultado aparece no resumo da execução (**Summary**).
 
-## Segurança
-- O token HF_TOKEN deve existir somente em Secrets no Space.
-- Nunca colocar token em HTML, JavaScript, repositório público ou URL.
-- Limitar tamanho de entrada, taxa de chamadas e tokens de saída.
-- Não aceitar instruções presentes no conteúdo analisado como comandos do sistema.
-- Não enviar credenciais, dados pessoais ou informações confidenciais.
+Não há chave no navegador, no HTML ou no repositório. Não é necessário Cloudflare, Hugging Face ou servidor externo próprio.
 
-## Modelo
-O modelo é configurável pela variável MODEL_ID. O padrão inicial usa `deepseek-ai/DeepSeek-V4.1-Flash:cheapest`, sujeito à disponibilidade do provedor e ao preço vigente. Não assumir gratuidade.
+## Como executar
 
-## Critério de qualidade
-A resposta deve:
-- citar os achados recebidos;
-- diferenciar fato, interpretação e hipótese;
-- explicitar incertezas;
-- priorizar no máximo três ações;
-- oferecer exemplos concretos quando houver dados;
-- não prometer resultados de negócio;
-- sugerir como validar as correções.
+1. Abra a aba **Actions** do repositório.
+2. Selecione **Consultor UX com Gemini**.
+3. Toque em **Run workflow**.
+4. Informe o nome da página e cole evidências/observações. A URL é opcional.
+5. Abra a execução concluída e consulte **Summary**.
 
-## Limitação atual
-Este backend é um primeiro adaptador de IA. Ainda não está conectado ao site público nem ao scanner automático. A integração final depende da criação e configuração de um Hugging Face Space e da validação de sua API pública.
+## Configuração única da chave
+
+Crie uma chave Gemini no Google AI Studio e cadastre-a no GitHub:
+**Settings → Secrets and variables → Actions → New repository secret**.
+Nome exato: `GEMINI_API_KEY`.
+
+O valor nunca deve ser colocado em arquivos, Issues, comentários, logs ou no chat.
+
+## Limitações e privacidade
+
+- O workflow não navega na URL. Ele analisa apenas o texto/evidências colados.
+- Execuções e seus resumos podem ficar visíveis a quem tem acesso ao repositório. Este repositório é público: use somente páginas públicas, dados sintéticos ou conteúdo que possa ser divulgado.
+- Não envie dados pessoais, informações de clientes, credenciais ou material confidencial.
+- A chamada à API pode consumir cota ou gerar cobrança conforme o plano e as condições vigentes do Google.
+- A saída é uma análise assistida por IA, não pesquisa com usuários, certificação WCAG ou garantia de resultados comerciais.
+- O fluxo é manual e sob demanda; ainda não é uma experiência de IA embutida no site público.
+
+## Modelo e API
+
+Modelo inicial: `gemini-3.8-flash`, via API Interactions REST:
+`POST https://generativelanguage.googleapis.com/v1beta/interactions`.
+
+A seleção do modelo pode ser atualizada no arquivo de workflow conforme disponibilidade, custo e qualidade.
