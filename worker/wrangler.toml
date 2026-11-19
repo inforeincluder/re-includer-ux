@@ -1,0 +1,6 @@
+name = "re-includer-ux-ai"
+main = "index.js"
+compatibility_date = "2026-11-18"
+
+[ai]
+binding = "AI"
