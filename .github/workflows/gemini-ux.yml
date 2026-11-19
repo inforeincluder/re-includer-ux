@@ -104,12 +104,12 @@ jobs:
           data=json.load(open("gemini_response.json", encoding="utf-8"))
           answer=data.get("output_text")
           if not answer:
-              outputs=data.get("outputs", [])
               pieces=[]
-              for item in outputs:
-                  for part in item.get("content", []):
-                      if part.get("type") == "text" and part.get("text"):
-                          pieces.append(part["text"])
+              for step in data.get("steps", []):
+                  if step.get("type") == "model_output":
+                      for part in step.get("content", []):
+                          if part.get("type") == "text" and part.get("text"):
+                              pieces.append(part["text"])
               answer="\n\n".join(pieces)
           if not answer:
               print("A API respondeu, mas não foi possível localizar o texto do diagnóstico.")
