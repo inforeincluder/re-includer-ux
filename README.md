@@ -12,7 +12,7 @@ Diagnóstico inicial de uma página digital, com achados explicáveis e recomend
 ## Consultor UX com Gemini
 A primeira integração de IA funciona pelo GitHub Actions: você fornece o nome da página e evidências, o Gemini produz um diagnóstico estruturado e o resultado aparece no resumo da execução.
 
-**Como usar:** abra [Actions](../../actions/workflows/gemini-ux.yml), selecione **Consultor UX com Gemini** e toque em **Run workflow**.
+**Como usar:** abra [Actions](https://github.com/inforeincluder/re-includer-ux/actions/workflows/gemini-ux.yml), selecione **Consultor UX com Gemini** e toque em **Run workflow**.
 
 A integração exige o segredo `GEMINI_API_KEY`. Consulte [docs/ia-arquitetura.md](docs/ia-arquitetura.md).
 
