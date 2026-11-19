@@ -27,7 +27,7 @@ jobs:
   analyze:
     name: Gerar diagnóstico UX
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Validar entrada e preparar solicitação
         env:
@@ -104,7 +104,7 @@ jobs:
           )
           PY
 
-      - name: Consultar Gemini
+      - name: Consultar Gemini (com retentativas para indisponibilidade temporária)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
@@ -112,16 +112,26 @@ jobs:
             echo "O segredo GEMINI_API_KEY não está configurado no repositório."
             exit 1
           fi
-          http_code=$(curl --silent --show-error \
-            --output gemini_response.json \
-            --write-out "%{http_code}" \
-            --request POST "https://generativelanguage.googleapis.com/v1beta/interactions" \
-            --header "x-goog-api-key: $GEMINI_API_KEY" \
-            --header "Content-Type: application/json" \
-            --data-binary @gemini_request.json)
-          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
-            echo "A API Gemini retornou HTTP $http_code. Verifique a chave, o acesso ao modelo e a cota."
-            python - <<'PY'
+
+          # Retenta apenas falhas transitórias do serviço; erros de autenticação/entrada falham imediatamente.
+          delays=(10 20 30 40)
+          for attempt in 0 1 2 3 4; do
+            http_code=$(curl --silent --show-error \
+              --output gemini_response.json \
+              --write-out "%{http_code}" \
+              --request POST "https://generativelanguage.googleapis.com/v1beta/interactions" \
+              --header "x-goog-api-key: $GEMINI_API_KEY" \
+              --header "Content-Type: application/json" \
+              --data-binary @gemini_request.json)
+
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+              echo "Gemini respondeu com HTTP $http_code na tentativa $((attempt + 1))."
+              break
+            fi
+
+            echo "Gemini retornou HTTP $http_code na tentativa $((attempt + 1))."
+            if [[ ! "$http_code" =~ ^(429|500|502|503|504)$ ]] || [ "$attempt -eq 4 ]; then
+              python - <<'PY'
           import json
           try:
               data=json.load(open("gemini_response.json", encoding="utf-8"))
@@ -130,8 +140,13 @@ jobs:
           except Exception:
               pass
           PY
-            exit 1
-          fi
+              exit 1
+            fi
+
+            delay=${delays[$attempt]}
+            echo "Falha transitória. Nova tentativa em ${delay}s."
+            sleep "$delay"
+          done
 
       - name: Publicar resultado no resumo da execução
         run: |
