@@ -130,7 +130,7 @@ jobs:
             fi
 
             echo "Gemini retornou HTTP $http_code na tentativa $((attempt + 1))."
-            if [[ ! "$http_code" =~ ^(429|500|502|503|504)$ ]] || [ "$attempt -eq 4 ]; then
+            if [[ ! "$http_code" =~ ^(429|500|502|503|504)$ ]] || [ "$attempt" -eq 4 ]; then
               python - <<'PY'
           import json
           try:
