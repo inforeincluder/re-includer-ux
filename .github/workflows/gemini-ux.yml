@@ -102,3 +102,22 @@ jobs:
               out.write(answer+"\n")
           pathlib.Path("answer.md").write_text(answer,encoding="utf-8")
           PY
+
+      - name: Disponibilizar relatório para download
+        id: report
+        uses: actions/upload-artifact@v4
+        with:
+          name: re-includer-ux-report-${{ github.run_id }}
+          path: answer.md
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Exibir link do relatório no resumo
+        if: success()
+        env:
+          REPORT_URL: ${{ steps.report.outputs.artifact-url }}
+        run: |
+          echo "## Arquivo do relatório" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Baixar relatório em Markdown]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "O arquivo fica disponível por 14 dias. O resumo completo permanece nesta execução." >> "$GITHUB_STEP_SUMMARY"
