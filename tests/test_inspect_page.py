@@ -70,6 +70,11 @@ class SyntheticCrawlerTests(unittest.TestCase):
                 first = next(p for p in evidence["pages"] if p["url"].endswith("/"))
                 form = first["desktop"]["forms"][0]
                 self.assertEqual(form["fieldCount"], 2)
+                self.assertTrue(form["fields"][0]["hasExplicitLabel"])
+                self.assertTrue(form["fields"][0]["requiredAttribute"])
+                self.assertFalse(form["fields"][1]["hasExplicitLabel"])
+                self.assertEqual(first["desktop"]["buttons"][0]["expanded"], "false")
+                self.assertTrue(first["desktop"]["liveRegions"])
                 self.assertNotIn("SYNTHETIC_PRIVATE_VALUE", json.dumps(evidence))
                 self.assertIn("Produto sintético", first["desktop"]["bodyText"])
         finally:
