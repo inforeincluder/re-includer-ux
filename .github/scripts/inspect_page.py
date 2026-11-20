@@ -106,6 +106,7 @@ PRINCÍPIOS OBRIGATÓRIOS
 - Diferencie FATO OBSERVADO, INTERPRETAÇÃO, HIPÓTESE e NÃO VERIFICADO.
 - Não invente usuários, objetivos, fluxos, métricas, testes, funcionalidades, falhas ou resultados.
 - Não conclua que jornadas funcionam ou falham apenas pelo DOM.
+- Considere falhas de requisição e respostas HTTP 4xx/5xx separadamente; não atribua automaticamente falhas de terceiros ao produto.
 - Não declare conformidade WCAG, contraste, acessibilidade completa, segurança, SEO ou performance com estas evidências.
 - Erros de console podem ser de terceiros ou transitórios; contextualize.
 - Sinais como campo sem label, imagem sem alt, múltiplos H1, overflow e link sem nome são indícios, não defeitos automáticos.
@@ -116,6 +117,8 @@ PRINCÍPIOS OBRIGATÓRIOS
 - Não infira falha de acessibilidade apenas pela ausência de um elemento nav. Avalie se existe um conjunto real de links de navegação que justifique esse landmark.
 - Só recomende testar âncoras como risco quando anchorLinks indicar targetExists=false; se true, não levante esse risco.
 - Não invente métricas, comportamento de fallback, execução de formulário ou dependência técnica além do que o código/DOM evidencia.
+- Não trate ausência de atributo HTML como prova de ausência da propriedade DOM, nem o inverso. Cite o campo exato da coleta.
+- Não chame o site inteiro de inspecionado: informe limites, páginas alcançadas, links não seguidos e falhas de carregamento.
 - Não prometa aumento de conversão, receita, retenção ou satisfação.
 
 ESCOPO: URL inicial {requested}; até {MAX_PAGES} páginas do mesmo host, profundidade {MAX_DEPTH}; parâmetros de consulta são preservados (exceto rastreamento); navegações/redirecionamentos para outros hosts são bloqueados; sem interação com controles.
