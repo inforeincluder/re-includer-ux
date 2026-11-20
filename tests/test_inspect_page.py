@@ -15,7 +15,7 @@ SCRIPT = ROOT / ".github" / "scripts" / "inspect_page.py"
 class FixtureHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         pages = {
-            "/": """<!doctype html><html lang="pt-BR"><head><title>Fixture</title></head>
+            "/": """<!doctype html><html lang="pt-BR"><head><title>Fixture</title><script src="https://example.com/external.js"></script></head>
 <body><main><h1>Produto sintético</h1><a href="/about">Sobre</a>
 <a href="/logout">Sair</a><a href="https://example.com/external">Externo</a>
 <form><label for="email">E-mail</label><input id="email" name="email" type="email" value="SYNTHETIC_PRIVATE_VALUE" required>
@@ -63,6 +63,7 @@ class SyntheticCrawlerTests(unittest.TestCase):
                 self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
                 evidence = json.loads((pathlib.Path(workdir) / "page_inspection.json").read_text())
                 self.assertEqual(evidence["pages_inspected"], 2)
+                self.assertGreaterEqual(evidence["requests_blocked"], 1)
                 urls = [p["url"] for p in evidence["pages"]]
                 self.assertTrue(any(url.endswith("/about") for url in urls))
                 self.assertFalse(any(url.endswith("/logout") for url in urls))
