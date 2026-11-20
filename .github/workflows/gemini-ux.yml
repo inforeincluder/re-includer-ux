@@ -86,7 +86,19 @@ jobs:
               out.write("## Páginas alcançadas\n\n")
               for p in inspection["pages"]:
                   out.write(f"- {p['url']} — HTTP {p.get('http_status','não obtido')}" + (f" — erro: {p['error']}" if p.get("error") else "") + "\n")
-              out.write(f"\n**Erros JavaScript de console:** {len(inspection['javascript_console_errors'])} · **Exceções de execução:** {len(inspection['javascript_runtime_errors'])}\n\n---\n\n")
+              out.write(f"\n**Erros JavaScript de console:** {len(inspection['javascript_console_errors'])} · **Exceções de execução:** {len(inspection['javascript_runtime_errors'])} · **Falhas de requisição:** {len(inspection.get('request_failures', []))} · **Respostas HTTP 4xx/5xx:** {len(inspection.get('http_error_responses', []))}\n\n")
+              if inspection.get("request_failures"):
+                  out.write("### Falhas de requisição (amostra)\n\n")
+                  for item in inspection["request_failures"][:20]:
+                      out.write(f"- {item['url']} — {item['failure']}\n")
+                  out.write("\n")
+              if inspection.get("http_error_responses"):
+                  out.write("### Respostas HTTP 4xx/5xx (amostra)\n\n")
+                  for item in inspection["http_error_responses"][:20]:
+                      out.write(f"- HTTP {item['status']} — {item['url']}\n")
+                  out.write("\n---\n\n")
+              else:
+                  out.write("---\n\n")
               out.write(answer+"\n")
           pathlib.Path("answer.md").write_text(answer,encoding="utf-8")
           PY
