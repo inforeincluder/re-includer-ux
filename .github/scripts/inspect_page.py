@@ -61,9 +61,12 @@ def main():
       landmarks:all('main,nav,header,footer,aside,[role="main"],[role="navigation"],[role="search"]',e=>({tag:e.tagName,role:e.getAttribute('role')||'',label:e.getAttribute('aria-label')||'',text:txt(e).slice(0,220)}),40),
       links:all('a',e=>({text:txt(e).slice(0,100),href:e.href||'',label:e.getAttribute('aria-label')||''}),250),
       buttons:all('button,input[type="button"],input[type="submit"],[role="button"]',e=>({text:txt(e).slice(0,100),type:e.getAttribute('type')||'',label:e.getAttribute('aria-label')||'',disabled:!!e.disabled}),100),
-      forms:all('form',e=>({method:e.method,action:e.getAttribute('action')||'',fieldCount:e.querySelectorAll('input,select,textarea,button').length,fields:[...e.querySelectorAll('input,select,textarea')].slice(0,80).map(f=>({tag:f.tagName,type:f.type||'',name:f.name||'',label:f.labels?.[0]?.innerText?.trim()||f.getAttribute('aria-label')||'',required:!!f.required}))}),30),
+      forms:all('form',e=>({methodProperty:e.method,methodAttribute:e.getAttribute('method'),actionProperty:e.action,actionAttribute:e.getAttribute('action'),noValidate:e.noValidate,fieldCount:e.querySelectorAll('input,select,textarea,button').length,fields:[...e.querySelectorAll('input,select,textarea')].slice(0,80).map(f=>({tag:f.tagName,type:f.type||'',name:f.name||'',label:f.labels?.[0]?.innerText?.trim()||f.getAttribute('aria-label')||'',required:!!f.required,disabled:!!f.disabled}))}),30),
       images:all('img',e=>({alt:e.getAttribute('alt'),hasAlt:e.hasAttribute('alt'),width:e.naturalWidth,height:e.naturalHeight}),100),
-      scripts:[...document.scripts].map(s=>s.src||'inline').slice(0,50),
+      scripts:[...document.scripts].map(s=>({src:s.src||'inline',async:s.async,defer:s.defer})).slice(0,50),
+      anchorTargets:all('[id]',e=>({id:e.id,tag:e.tagName,text:txt(e).slice(0,120)}),150),
+      anchorLinks:all('a[href^="#"]',e=>({text:txt(e).slice(0,100),href:e.getAttribute('href'),targetExists:!!document.getElementById(decodeURIComponent(e.getAttribute('href').slice(1)))}),100),
+      liveRegions:all('[aria-live],[role="status"],[role="alert"]',e=>({tag:e.tagName,role:e.getAttribute('role')||'',ariaLive:e.getAttribute('aria-live')||'',text:txt(e).slice(0,200)}),50),
       signals:{h1Count:document.querySelectorAll('h1').length,imagesWithoutAlt:document.querySelectorAll('img:not([alt])').length,
        emptyLinks:[...document.querySelectorAll('a')].filter(a=>!txt(a)).length,
        unnamedButtons:[...document.querySelectorAll('button,[role="button"]')].filter(b=>!txt(b)&&!b.getAttribute('aria-label')).length,
@@ -98,7 +101,12 @@ PRINCÍPIOS OBRIGATÓRIOS
 - Erros de console podem ser de terceiros ou transitórios; contextualize.
 - Sinais como campo sem label, imagem sem alt, múltiplos H1, overflow e link sem nome são indícios, não defeitos automáticos.
 - Ausência na coleta não prova inexistência; estados condicionais, autenticados ou interativos podem não aparecer.
-- Todo achado precisa citar URL e evidência específica, impacto plausível, confiança e validação profissional.
+- Todo achado precisa citar URL e evidência específica, impacto plausível, confiança e validação profissional. Se não houver evidência direta, classifique como pergunta/lacuna, não como defeito.
+- Diferencie atributos HTML declarados (methodAttribute/actionAttribute) de propriedades DOM com valores padrão (methodProperty/actionProperty). Nunca afirme que um atributo foi declarado se o atributo explícito estiver ausente.
+- Não conclua ausência de feedback, estado ou landmark sem considerar liveRegions, buttons, links, scripts e estrutura efetivamente coletados.
+- Não infira falha de acessibilidade apenas pela ausência de um elemento nav. Avalie se existe um conjunto real de links de navegação que justifique esse landmark.
+- Só recomende testar âncoras como risco quando anchorLinks indicar targetExists=false; se true, não levante esse risco.
+- Não invente métricas, comportamento de fallback, execução de formulário ou dependência técnica além do que o código/DOM evidencia.
 - Não prometa aumento de conversão, receita, retenção ou satisfação.
 
 ESCOPO: URL inicial {requested}; até {MAX_PAGES} páginas do mesmo domínio, profundidade {MAX_DEPTH}; sem interação com controles.
