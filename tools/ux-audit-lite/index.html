@@ -8,8 +8,8 @@
 <section class="intro"><p class="eyebrow">Re-Includer UX · Análise assistida por IA</p><h1>Diagnóstico de experiência do produto</h1>
 <p>Inspecione a experiência pública de um site como um sistema: páginas, conteúdo, navegação, estrutura, responsividade e sinais técnicos observáveis. Receba uma base organizada para a avaliação de um profissional de produto.</p></section>
 <section class="panel"><form id="diagnostic-form" novalidate><label for="page-url">URL do site</label>
-<input id="page-url" name="page-url" type="url" inputmode="url" autocomplete="url" placeholder="https://exemplo.com.br" required maxlength="2048">
-<p class="hint">Informe a página inicial ou uma página representativa. A ferramenta tentará percorrer páginas públicas do mesmo domínio, dentro de limites controlados.</p>
+<input id="page-url" name="page-url" type="url" inputmode="url" autocomplete="url" aria-describedby="url-hint status" placeholder="https://exemplo.com.br" required maxlength="2048">
+<p class="hint" id="url-hint">Informe uma página pública. A inspeção tenta percorrer até 20 páginas do mesmo host, com profundidade máxima 2. Links externos não são seguidos.</p>
 <button class="primary" type="submit">Preparar diagnóstico</button><p id="status" class="status" role="status" aria-live="polite"></p></form></section>
 <section class="panel explanation"><h2>O que esta análise faz</h2><ul>
 <li>Inspeciona páginas públicas do mesmo domínio, sem exigir login.</li><li>Observa estrutura, títulos, conteúdo, links, formulários, imagens e sinais de responsividade.</li><li>Registra erros JavaScript observados durante o carregamento.</li><li>Organiza oportunidades, riscos e lacunas para orientar a avaliação profissional.</li></ul>
@@ -17,6 +17,6 @@
 <p class="notice"><strong>Importante:</strong> o relatório é uma análise preliminar assistida por IA. Serve como material de apoio e hipótese de trabalho. A interpretação, priorização e decisão final devem ser feitas por um profissional qualificado, considerando contexto do produto, dados e usuários reais.</p></section>
 <section class="panel next-step" id="next-step" hidden><h2>Próxima etapa</h2><p>A URL foi copiada. No GitHub Actions, inicie o workflow <strong>Consultor UX com Gemini</strong>, cole o endereço no campo <strong>page_url</strong> e execute.</p>
 <a class="action-link" href="https://github.com/inforeincluder/re-includer-ux/actions/workflows/gemini-ux.yml" target="_blank" rel="noopener noreferrer">Abrir execução do diagnóstico no GitHub</a>
-<p class="hint">O relatório aparece no resumo da execução (Summary). A chave Gemini fica armazenada como segredo no GitHub e não é exposta nesta página.</p></section>
+<p class="hint">O relatório aparece no resumo da execução (Summary). Esta etapa ainda é manual: você precisa tocar em Run workflow e confirmar a execução. A URL e os dados públicos coletados são processados no GitHub Actions e enviados à API do Gemini. Não use URLs com conteúdo confidencial, áreas privadas ou dados pessoais.</p></section>
 <footer>Re-Includer UX · Uma ferramenta do ecossistema Re-Includer. Inspeção pública, limitada e não invasiva. Análise assistida por IA para apoiar — não substituir — profissionais de produto.</footer>
 </main></body></html>
