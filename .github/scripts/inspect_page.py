@@ -42,8 +42,11 @@ def main():
   request_failures=[];http_errors=[]
   page.on("console",lambda m: console_errors.append({"page":page.url,"message":m.text[:300]}) if m.type=="error" and len(console_errors)<100 else None)
   page.on("pageerror",lambda e: page_errors.append({"page":page.url,"message":str(e)[:300]}) if len(page_errors)<100 else None)
-  page.on("requestfailed",lambda r: request_failures.append({"page":page.url,"url":r.url[:500],"failure":(r.failure or "")[:200]}) if len(request_failures)<100 else None)
-  page.on("response",lambda r: http_errors.append({"page":page.url,"url":r.url[:500],"status":r.status}) if r.status>=400 and len(http_errors)<100 else None)
+  def host_scope(raw):
+   try:return "same-host" if urlparse(raw).netloc.lower()==origin.lower() else "third-party"
+   except Exception:return "unknown"
+  page.on("requestfailed",lambda r: request_failures.append({"page":page.url,"url":r.url[:500],"host_scope":host_scope(r.url),"failure":(r.failure or "")[:200]}) if len(request_failures)<100 else None)
+  page.on("response",lambda r: http_errors.append({"page":page.url,"url":r.url[:500],"host_scope":host_scope(r.url),"status":r.status}) if r.status>=400 and len(http_errors)<100 else None)
   def guard(route):
    nonlocal seen,blocked
    seen+=1
@@ -70,8 +73,8 @@ def main():
       headings:all('h1,h2,h3,h4,h5,h6',e=>({level:e.tagName,text:txt(e).slice(0,200)}),80),
       landmarks:all('main,nav,header,footer,aside,[role="main"],[role="navigation"],[role="search"]',e=>({tag:e.tagName,role:e.getAttribute('role')||'',label:e.getAttribute('aria-label')||'',text:txt(e).slice(0,220)}),40),
       links:all('a',e=>({text:txt(e).slice(0,100),href:e.href||'',label:e.getAttribute('aria-label')||''}),250),
-      buttons:all('button,input[type="button"],input[type="submit"],[role="button"]',e=>({text:txt(e).slice(0,100),type:e.getAttribute('type')||'',label:e.getAttribute('aria-label')||'',disabled:!!e.disabled}),100),
-      forms:all('form',e=>({methodProperty:e.method,methodAttribute:e.getAttribute('method'),actionProperty:e.action,actionAttribute:e.getAttribute('action'),noValidate:e.noValidate,fieldCount:e.querySelectorAll('input,select,textarea,button').length,fields:[...e.querySelectorAll('input,select,textarea')].slice(0,80).map(f=>({tag:f.tagName,type:f.type||'',name:f.name||'',label:f.labels?.[0]?.innerText?.trim()||f.getAttribute('aria-label')||'',required:!!f.required,disabled:!!f.disabled}))}),30),
+      buttons:all('button,input[type="button"],input[type="submit"],[role="button"]',e=>({text:txt(e).slice(0,100),type:e.getAttribute('type')||'',label:e.getAttribute('aria-label')||'',disabled:!!e.disabled,expanded:e.getAttribute('aria-expanded'),pressed:e.getAttribute('aria-pressed'),controls:e.getAttribute('aria-controls')}),100),
+      forms:all('form',e=>({methodProperty:e.method,methodAttribute:e.getAttribute('method'),actionProperty:e.action,actionAttribute:e.getAttribute('action'),noValidate:e.noValidate,fieldCount:e.querySelectorAll('input,select,textarea,button').length,fields:[...e.querySelectorAll('input,select,textarea')].slice(0,80).map(f=>({tag:f.tagName,type:f.type||'',name:f.name||'',hasExplicitLabel:!!f.labels?.length,labels:[...(f.labels||[])].map(l=>(l.innerText||'').trim().slice(0,120)),ariaLabel:f.getAttribute('aria-label'),ariaLabelledby:f.getAttribute('aria-labelledby'),ariaDescribedby:f.getAttribute('aria-describedby'),required:!!f.required,requiredAttribute:f.hasAttribute('required'),disabled:!!f.disabled,validity:{valid:f.validity?.valid??null,valueMissing:f.validity?.valueMissing??null}}))}),30),
       images:all('img',e=>({alt:e.getAttribute('alt'),hasAlt:e.hasAttribute('alt'),width:e.naturalWidth,height:e.naturalHeight}),100),
       scripts:[...document.scripts].map(s=>({src:s.src||'inline',async:s.async,defer:s.defer})).slice(0,50),
       anchorTargets:all('[id]',e=>({id:e.id,tag:e.tagName,text:txt(e).slice(0,120)}),150),
