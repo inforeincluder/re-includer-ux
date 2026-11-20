@@ -18,3 +18,19 @@ O crawler percorre links descobertos no mesmo host, até 20 páginas, profundida
 A URL e os dados públicos coletados são processados pelo GitHub Actions e enviados à API do Gemini. Não use dados pessoais, credenciais, conteúdo confidencial ou páginas privadas.
 
 O relatório é apoio preliminar à avaliação de profissionais, não substitui pesquisa com usuários, avaliação contextual, auditoria WCAG ou análise de negócio.
+
+
+## Testes automáticos com dados sintéticos
+
+O workflow **Validate Re-Includer UX** executa testes sem depender de um site real ou de dados fornecidos por usuários:
+
+- valida canonicalização de URLs e preservação de parâmetros funcionais;
+- confirma o bloqueio de endereços privados fora do modo de teste;
+- inicia um site local descartável com páginas, links externos, rota de logout, formulário e controles sintéticos;
+- verifica descoberta limitada de páginas, bloqueio de rotas sensíveis e links externos;
+- verifica a coleta de rótulos, campos obrigatórios, estados ARIA e regiões dinâmicas;
+- confirma que valores digitados em campos de formulário não entram no arquivo de evidências.
+
+A exceção de loopback é habilitada exclusivamente pelo ambiente de teste `REINCLUDER_SYNTHETIC_TEST=1`; o workflow de diagnóstico real não define essa variável. Os testes não enviam formulários nem clicam em controles.
+
+**Limite:** testes sintéticos validam o comportamento do coletor em cenários controlados. Não comprovam a qualidade das interpretações do Gemini, a cobertura de qualquer site real nem eliminam o risco de DNS rebinding/SSRF do ambiente de execução.
