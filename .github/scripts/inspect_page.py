@@ -48,7 +48,7 @@ def main():
                 landmarks:all('main,nav,header,footer,aside,[role="main"],[role="navigation"]',e=>({tag:e.tagName,role:e.getAttribute('role')||'',label:e.getAttribute('aria-label')||'',text:txt(e).slice(0,350)})),
                 links:all('a',e=>({text:txt(e).slice(0,140),href:e.getAttribute('href')||'',ariaLabel:e.getAttribute('aria-label')||''})),
                 buttons:all('button,input[type="button"],input[type="submit"],[role="button"]',e=>({text:txt(e).slice(0,140),type:e.getAttribute('type')||'',ariaLabel:e.getAttribute('aria-label')||'',disabled:!!e.disabled})),
-                forms:all('form',e=>({action:e.getAttribute('action')||'',method:e.getAttribute('method')||'get',fields:[...e.querySelectorAll('input,select,textarea,button')].slice(0,35).map(f=>({tag:f.tagName,type:f.getAttribute('type')||'',name:f.getAttribute('name')||'',label:f.labels?.[0]?.innerText?.trim()||f.getAttribute('aria-label')||'',required:!!f.required,placeholder:f.getAttribute('placeholder')||''}))})),
+                forms:all('form',e=>{const fields=[...e.querySelectorAll('input,select,textarea,button')];const radios=fields.filter(f=>f.tagName==='INPUT'&&f.type==='radio');const groups=[...new Set(radios.map(f=>f.name))];return {action:e.getAttribute('action')||'',methodAttribute:e.getAttribute('method'),effectiveMethod:e.method,fieldCount:fields.length,radioGroups:groups.map(name=>({name,count:radios.filter(f=>f.name===name).length,required:radios.some(f=>f.name===name&&f.required)})),fields:fields.map(f=>({tag:f.tagName,type:f.getAttribute('type')||'',name:f.getAttribute('name')||'',label:f.labels?.[0]?.innerText?.trim()||f.getAttribute('aria-label')||'',required:!!f.required,placeholder:f.getAttribute('placeholder')||''}))};}),
                 images:all('img',e=>({alt:e.getAttribute('alt'),hasAlt:e.hasAttribute('alt'),src:e.currentSrc?.split('?')[0]||''})),
                 counts:{inputs:document.querySelectorAll('input').length,selects:document.querySelectorAll('select').length,textareas:document.querySelectorAll('textarea').length,iframes:document.querySelectorAll('iframe').length},
                 bodyText:(document.body?.innerText||'').slice(0,18000)
@@ -70,6 +70,8 @@ REGRAS:
 - A inspeção de DOM não comprova experiência real, contraste WCAG, funcionamento completo, comportamento de usuários ou conversão.
 - Não trate ausência de alt automaticamente como defeito; considere contexto informativo/decorativo.
 - Não confunda quantidade de links com qualidade de navegação.
+- Não recomende alterar GET/POST apenas porque o formulário declara GET: isso, isoladamente, não comprova envio nativo nem exposição de dados. Se o tratamento JavaScript não foi inspecionado/executado, classifique como ponto a validar, não como falha confirmada.
+- Não afirme que todos os grupos/campos foram verificados se a coleta estiver truncada; use fieldCount, radioGroups e a lista completa de fields.
 - Se evidências forem insuficientes, diga isso; não force recomendações.
 - Não prometa aumento de conversão, receita, retenção ou ranking.
 - Foram inspecionados uma URL e um viewport móvel de 390 px. Não houve autenticação, envio de formulários, cliques ou rastreamento de páginas internas.
