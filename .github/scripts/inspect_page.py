@@ -3,7 +3,6 @@ import ipaddress,json,os,re,socket,sys
 from urllib.parse import parse_qsl,urlencode
 from collections import deque
 from urllib.parse import urljoin,urlparse,urlunparse
-from playwright.sync_api import sync_playwright,TimeoutError as PlaywrightTimeoutError
 MAX_PAGES=20
 MAX_DEPTH=2
 MAX_REQUESTS=500
@@ -17,7 +16,8 @@ def public_host(url):
  except ValueError:
   try:ips=list({ipaddress.ip_address(x[4][0]) for x in socket.getaddrinfo(host,None,type=socket.SOCK_STREAM)})
   except socket.gaierror:return False
- return bool(ips) and all(x.is_global for x in ips)
+ allow_local=os.environ.get("REINCLUDER_SYNTHETIC_TEST")=="1"
+ return bool(ips) and all(x.is_global or (allow_local and x.is_loopback) for x in ips)
 def canonical(url):
  p=urlparse(url)
  query=[(k,v) for k,v in parse_qsl(p.query,keep_blank_values=True) if not k.lower().startswith("utm_") and k.lower() not in ("gclid","fbclid","mc_cid","mc_eid")]
@@ -30,6 +30,7 @@ def safe_link(href,base,origin):
   return u
  except Exception:return None
 def main():
+ from playwright.sync_api import sync_playwright,TimeoutError as PlaywrightTimeoutError
  requested=os.environ.get("PAGE_URL","").strip()
  if len(requested)>2048 or not public_host(requested):raise ValueError("Informe URL HTTP/HTTPS pública. Endereços locais, privados ou com credenciais são bloqueados.")
  start=canonical(requested);origin=urlparse(start).netloc
