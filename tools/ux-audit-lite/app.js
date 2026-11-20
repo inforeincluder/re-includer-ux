@@ -3,6 +3,9 @@ const input=document.getElementById("page-url");
 const status=document.getElementById("status");
 const next=document.getElementById("next-step");
 const workflowUrl="https://github.com/inforeincluder/re-includer-ux/actions/workflows/gemini-ux.yml";
+const submit=form.querySelector('button[type="submit"]');
+submit.disabled=false;
+submit.textContent="Preparar diagnóstico";
 
 input.addEventListener("input",()=>{input.setCustomValidity("");input.removeAttribute("aria-invalid");});
 
