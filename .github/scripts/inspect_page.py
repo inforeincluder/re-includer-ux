@@ -53,7 +53,7 @@ def main():
    target=urlparse(route.request.url)
    # Navegações e redirecionamentos permanecem no host inicial; links externos nunca são seguidos.
    if seen>MAX_REQUESTS or not public_host(route.request.url):blocked+=1;route.abort()
-   elif route.request.is_navigation_request() and target.netloc.lower()!=origin.lower():blocked+=1;route.abort()
+   elif target.netloc.lower()!=origin.lower():blocked+=1;route.abort()
    elif route.request.resource_type=="media":route.abort()
    else:route.continue_()
   page.route("**/*",guard)
