@@ -1,30 +1,33 @@
 # Re-Includer UX
 
-**Ferramentas de UX, inteligência artificial e produtos digitais.**
+Ferramenta experimental de inspeção pública, limitada e não invasiva para apoiar profissionais de UX e produto.
 
-O Re-Includer UX desenvolve ferramentas e serviços de experiência do usuário (UX), com apoio de IA e foco em resultados práticos.
+## Produto atual: Diagnóstico de produto
 
-## Primeiro produto: UX Audit Lite
-Diagnóstico inicial de uma página digital, com achados explicáveis e recomendações priorizadas sobre clareza, navegação, chamadas para ação e acessibilidade básica.
+A pessoa informa uma URL pública. O GitHub Actions executa um crawler Playwright que percorre links do mesmo host (até 20 páginas, profundidade máxima 2 e 500 requisições) e envia evidências estruturadas à API do Gemini. O relatório aparece no Summary da execução.
 
-**Limite:** análise heurística não substitui pesquisa com usuários, auditoria formal de acessibilidade ou avaliação técnica completa. Não há promessa de aumento de conversão.
+**Fluxo atual:** a pessoa precisa abrir o workflow, tocar em **Run workflow**, colar a URL em `page_url` e confirmar. O site não dispara a análise automaticamente nem exibe o relatório dentro da própria página.
 
-## Consultor UX com Gemini
-A primeira integração de IA funciona pelo GitHub Actions: você fornece o nome da página e evidências, o Gemini produz um diagnóstico estruturado e o resultado aparece no resumo da execução.
+## Limites e segurança
 
-**Como usar:** abra [Actions](https://github.com/inforeincluder/re-includer-ux/actions/workflows/gemini-ux.yml), selecione **Consultor UX com Gemini** e toque em **Run workflow**.
+- Somente páginas públicas; não autentica, não clica em controles, não envia formulários, não compra, não altera dados e não acessa áreas privadas.
+- A inspeção não é cobertura completa: páginas sem links descobertos, rotas condicionais, estados interativos e conteúdo autenticado podem ficar de fora.
+- A URL e os dados públicos coletados são processados no GitHub Actions e enviados à API do Gemini. Execuções e resumos podem ficar visíveis conforme as permissões do repositório.
+- Não enviar dados pessoais, credenciais, conteúdo confidencial ou URLs privadas.
+- O relatório é uma base de trabalho, não auditoria formal, teste com usuários, certificação WCAG ou substituto da avaliação profissional.
 
-A integração exige o segredo `GEMINI_API_KEY`. Consulte [docs/ia-arquitetura.md](docs/ia-arquitetura.md).
+## Configuração
+
+O workflow requer o segredo de repositório `GEMINI_API_KEY`, configurado em **Settings → Secrets and variables → Actions**. A chave não deve aparecer no frontend nem em arquivos versionados.
 
 ## Estrutura
-- `docs/` — estratégia, produto, monetização e arquitetura de IA.
-- `tools/ux-audit-lite/` — protótipo da auditoria.
-- `ai-backend/` e `worker/` — experimentos anteriores, não usados nesta primeira integração Gemini.
-- `research/` — evidências e aprendizados de validação.
+
+- `.github/scripts/inspect_page.py`: crawler e coleta de evidências.
+- `.github/workflows/gemini-ux.yml`: execução manual e geração do relatório.
+- `tools/ux-audit-lite/`: interface pública.
+- `docs/`: arquitetura, estratégia e decisões.
+- `ai-backend/` e `worker/`: experimentos anteriores, não conectados ao fluxo atual.
 
 ## Princípios
-- Evidências antes de conclusões.
-- IA como apoio, com revisão humana.
-- Não inventar observações ou resultados.
-- Não solicitar senhas, credenciais ou dados sensíveis.
-- Custos controlados e operação mobile-first.
+
+Evidência antes de conclusão; incerteza explícita; recomendações verificáveis; revisão humana; custos e exposição de dados sob controle.
