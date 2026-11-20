@@ -4,12 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       page_url:
-        description: "URL pública da página que será inspecionada"
+        description: "URL pública inicial do site a inspecionar"
         required: true
-        type: string
-      page_name:
-        description: "Nome da página ou produto (opcional)"
-        required: false
         type: string
 
 permissions:
@@ -21,102 +17,76 @@ concurrency:
 
 jobs:
   analyze:
-    name: Inspecionar página e gerar diagnóstico UX
+    name: Inspecionar site e gerar diagnóstico UX
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Baixar código do repositório
         uses: actions/checkout@v4
-
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Validar sintaxe do inspetor
         run: python -m py_compile .github/scripts/inspect_page.py
-
       - name: Instalar navegador de inspeção
         run: |
           python -m pip install --upgrade pip
           python -m pip install playwright
           python -m playwright install --with-deps chromium
-
-      - name: Abrir URL e coletar evidências
+      - name: Inspecionar páginas públicas em modo somente leitura
         env:
           PAGE_URL: ${{ inputs.page_url }}
-          PAGE_NAME: ${{ inputs.page_name }}
         run: python .github/scripts/inspect_page.py
-
-      - name: Consultar Gemini (com retentativas para indisponibilidade temporária)
+      - name: Consultar Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           if [ -z "$GEMINI_API_KEY" ]; then
-            echo "O segredo GEMINI_API_KEY não está configurado no repositório."
+            echo "O segredo GEMINI_API_KEY não está configurado."
             exit 1
           fi
-
           delays=(10 20 30 40)
           for attempt in 0 1 2 3 4; do
-            http_code=$(curl --silent --show-error --max-time 420 \
-              --output gemini_response.json \
-              --write-out "%{http_code}" \
-              --request POST "https://generativelanguage.googleapis.com/v1beta/interactions" \
-              --header "x-goog-api-key: $GEMINI_API_KEY" \
-              --header "Content-Type: application/json" \
-              --data-binary @gemini_request.json)
-
-            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-              echo "Gemini respondeu com HTTP $http_code na tentativa $((attempt + 1))."
-              break
-            fi
-
+            http_code=$(curl --silent --show-error --max-time 420 --output gemini_response.json --write-out "%{http_code}" --request POST "https://generativelanguage.googleapis.com/v1beta/interactions" --header "x-goog-api-key: $GEMINI_API_KEY" --header "Content-Type: application/json" --data-binary @gemini_request.json)
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then echo "Gemini respondeu com HTTP $http_code."; break; fi
             echo "Gemini retornou HTTP $http_code na tentativa $((attempt + 1))."
             if [[ ! "$http_code" =~ ^(429|500|502|503|504)$ ]] || [ "$attempt" -eq 4 ]; then
               python - <<'PY'
           import json
           try:
-              data=json.load(open("gemini_response.json", encoding="utf-8"))
-              message=data.get("error",{}).get("message")
-              if message: print("Detalhe:", message[:500])
-          except Exception:
-              pass
+              d=json.load(open("gemini_response.json",encoding="utf-8"))
+              print((d.get("error",{}).get("message") or "")[:500])
+          except Exception: pass
           PY
               exit 1
             fi
-
-            delay=${delays[$attempt]}
-            echo "Falha transitória. Nova tentativa em ${delay}s."
-            sleep "$delay"
+            sleep "${delays[$attempt]}"
           done
-
       - name: Publicar diagnóstico no resumo da execução
         run: |
           python - <<'PY'
-          import json, pathlib, sys
-          data=json.load(open("gemini_response.json", encoding="utf-8"))
+          import json, pathlib, os, sys
+          data=json.load(open("gemini_response.json",encoding="utf-8"))
           answer=data.get("output_text")
           if not answer:
-              pieces=[]
-              for step in data.get("steps", []):
-                  if step.get("type") == "model_output":
-                      for part in step.get("content", []):
-                          if part.get("type") == "text" and part.get("text"):
-                              pieces.append(part["text"])
-              answer="\n\n".join(pieces)
+              parts=[]
+              for step in data.get("steps",[]):
+                  if step.get("type")=="model_output":
+                      parts += [p.get("text","") for p in step.get("content",[]) if p.get("type")=="text"]
+              answer="\n\n".join(x for x in parts if x)
           if not answer:
-              print("A API respondeu, mas não foi possível localizar o texto do diagnóstico.")
-              print(json.dumps(data, ensure_ascii=False)[:1500])
-              sys.exit(1)
-          inspection=json.load(open("page_inspection.json", encoding="utf-8"))
-          with open(pathlib.Path(__import__("os").environ["GITHUB_STEP_SUMMARY"]), "a", encoding="utf-8") as summary:
-              summary.write("# Diagnóstico UX — Re-Includer UX\n\n")
-              summary.write("> Página pública inspecionada automaticamente com Chromium. O relatório se limita aos elementos e estados efetivamente coletados.\n\n")
-              summary.write(f"**URL solicitada:** {inspection['requested_url']}\n\n")
-              summary.write(f"**URL final:** {inspection['final_url']}\n\n")
-              summary.write(f"**Status HTTP:** {inspection['http_status']} · **Requisições:** {inspection['requests_seen']} · **Bloqueadas:** {inspection['requests_blocked']}\n\n---\n\n")
-              summary.write(answer)
-              summary.write("\n")
-          pathlib.Path("answer.md").write_text(answer, encoding="utf-8")
+              print("Gemini não retornou texto de diagnóstico.");sys.exit(1)
+          inspection=json.load(open("page_inspection.json",encoding="utf-8"))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as out:
+              out.write("# Diagnóstico de produto — Re-Includer UX\n\n")
+              out.write("> Análise preliminar assistida por IA. Inspeção pública e não invasiva; material de apoio para avaliação final por profissional.\n\n")
+              out.write(f"**URL inicial:** {inspection['requested_url']}\n\n")
+              out.write(f"**Páginas inspecionadas:** {inspection['pages_inspected']} de até {inspection['page_limit']} · **Profundidade máxima:** {inspection['depth_limit']} · **Requisições:** {inspection['requests_seen']} · **Bloqueadas:** {inspection['requests_blocked']}\n\n")
+              out.write("## Páginas alcançadas\n\n")
+              for p in inspection["pages"]:
+                  out.write(f"- {p['url']} — HTTP {p.get('http_status','não obtido')}" + (f" — erro: {p['error']}" if p.get("error") else "") + "\n")
+              out.write(f"\n**Erros JavaScript de console:** {len(inspection['javascript_console_errors'])} · **Exceções de execução:** {len(inspection['javascript_runtime_errors'])}\n\n---\n\n")
+              out.write(answer+"\n")
+          pathlib.Path("answer.md").write_text(answer,encoding="utf-8")
           PY
