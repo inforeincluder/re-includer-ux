@@ -4,7 +4,7 @@ const status=document.getElementById("status");
 const next=document.getElementById("next-step");
 const workflowUrl="https://github.com/inforeincluder/re-includer-ux/actions/workflows/gemini-ux.yml";
 
-input.addEventListener("input",()=>input.setCustomValidity(""));
+input.addEventListener("input",()=>{input.setCustomValidity("");input.removeAttribute("aria-invalid");});
 
 form.addEventListener("submit",async event=>{
   event.preventDefault();
@@ -14,6 +14,7 @@ form.addEventListener("submit",async event=>{
     if(!["http:","https:"].includes(url.protocol)||!url.hostname||url.username||url.password)throw new Error("URL inválida");
   }catch{
     input.setCustomValidity("Informe uma URL pública válida, iniciada por http:// ou https://, sem usuário ou senha.");
+    input.setAttribute("aria-invalid","true");
     input.reportValidity();
     return;
   }
@@ -24,7 +25,7 @@ form.addEventListener("submit",async event=>{
   form.setAttribute("aria-busy","true");
 
   // Abrir durante o gesto do usuário reduz bloqueios de popup em navegadores móveis.
-  const workflowTab=window.open(workflowUrl,"_blank","noopener,noreferrer");
+  window.open(workflowUrl,"_blank","noopener,noreferrer");
   next.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
 
   try{
@@ -36,6 +37,5 @@ form.addEventListener("submit",async event=>{
     input.select();
   }finally{
     form.removeAttribute("aria-busy");
-    if(!workflowTab)status.textContent+=" Se a nova aba não abriu, use o link abaixo.";
   }
 });
