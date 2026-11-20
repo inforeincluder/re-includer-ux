@@ -1,43 +1,37 @@
-# IA no Re-Includer UX
+# Arquitetura de IA — Re-Includer UX
 
-## Primeira integração: Gemini via GitHub Actions
+## Fluxo ativo: GitHub Actions + Playwright + Gemini
 
-A primeira versão usa o próprio GitHub como interface operacional:
-- O fluxo **Consultor UX com Gemini** é iniciado manualmente em Actions.
-- A entrada é fornecida no formulário de execução.
-- A chave fica em **Settings → Secrets and variables → Actions** como `GEMINI_API_KEY`.
-- O resultado aparece no resumo da execução (**Summary**).
+1. A interface pública recebe uma URL.
+2. A pessoa abre o workflow **Consultor UX com Gemini** e inicia manualmente a execução.
+3. O script `.github/scripts/inspect_page.py` valida a URL e inspeciona páginas públicas.
+4. A coleta limita a navegação a até 20 páginas, profundidade 2 e 500 requisições.
+5. O workflow envia evidências à API Gemini usando o segredo `GEMINI_API_KEY`.
+6. O relatório é publicado no Summary da execução.
 
-Não há chave no navegador, no HTML ou no repositório. Não é necessário Cloudflare, Hugging Face ou servidor externo próprio.
+A interface não dispara o workflow nem recebe o relatório diretamente. O processo depende de ação manual no GitHub.
 
-## Como executar
+## Segurança e privacidade
 
-1. Abra a aba **Actions** do repositório.
-2. Selecione **Consultor UX com Gemini**.
-3. Toque em **Run workflow**.
-4. Informe o nome da página e cole evidências/observações. A URL é opcional.
-5. Abra a execução concluída e consulte **Summary**.
+- A chave Gemini fica em GitHub Actions Secrets e nunca deve ser incluída no frontend.
+- O crawler não autentica, não clica, não envia formulários, não realiza compras, não altera dados e não acessa áreas privadas.
+- URLs locais, IPs não públicos e hosts que não resolvem para endereços públicos são rejeitados.
+- A URL e os dados públicos coletados são enviados ao GitHub Actions e à API Gemini. O conteúdo não permanece apenas no navegador.
+- Execuções e resumos podem ficar visíveis conforme as permissões do repositório. Use apenas conteúdo que possa ser processado e divulgado.
+- A validação DNS reduz riscos, mas não equivale a isolamento de rede ou proteção absoluta contra DNS rebinding. Antes de abrir a ferramenta a uso público em escala, é necessária revisão adicional de segurança e egress controlado.
 
-## Configuração única da chave
+## Limites da inspeção
 
-Crie uma chave Gemini no Google AI Studio e cadastre-a no GitHub:
-**Settings → Secrets and variables → Actions → New repository secret**.
-Nome exato: `GEMINI_API_KEY`.
+- Até 20 páginas, profundidade 2 e 500 requisições.
+- Descoberta por links encontrados no DOM; não é spider completo nem usa sitemap atualmente.
+- Não cobre autenticação, estados após clique, formulários submetidos, conteúdo carregado apenas por interação, nem todos os breakpoints.
+- Erros de rede/console podem vir de serviços externos ou condições transitórias.
+- Ausência de evidência não prova ausência de problema.
 
-O valor nunca deve ser colocado em arquivos, Issues, comentários, logs ou no chat.
+## Contrato de qualidade do relatório
 
-## Limitações e privacidade
+O Gemini deve separar fatos observados, interpretações, hipóteses e itens não verificados; citar URL e evidência específica; não inventar usuários, tarefas, métricas, testes ou falhas; distinguir atributos HTML explícitos de propriedades DOM padrão; tratar sinais automatizados como indícios; reduzir achados quando a evidência for insuficiente; e apresentar perguntas de validação.
 
-- O workflow não navega na URL. Ele analisa apenas o texto/evidências colados.
-- Execuções e seus resumos podem ficar visíveis a quem tem acesso ao repositório. Este repositório é público: use somente páginas públicas, dados sintéticos ou conteúdo que possa ser divulgado.
-- Não envie dados pessoais, informações de clientes, credenciais ou material confidencial.
-- A chamada à API pode consumir cota ou gerar cobrança conforme o plano e as condições vigentes do Google.
-- A saída é uma análise assistida por IA, não pesquisa com usuários, certificação WCAG ou garantia de resultados comerciais.
-- O fluxo é manual e sob demanda; ainda não é uma experiência de IA embutida no site público.
+## Experimentos anteriores
 
-## Modelo e API
-
-Modelo inicial: `gemini-3.8-flash`, via API Interactions REST:
-`POST https://generativelanguage.googleapis.com/v1beta/interactions`.
-
-A seleção do modelo pode ser atualizada no arquivo de workflow conforme disponibilidade, custo e qualidade.
+`ai-backend/` (Hugging Face) e `worker/` (Cloudflare Workers) são protótipos não conectados à interface atual. Não devem ser considerados backend ativo nem publicados sem revisão de segurança, configuração antiabuso e atualização da documentação.
